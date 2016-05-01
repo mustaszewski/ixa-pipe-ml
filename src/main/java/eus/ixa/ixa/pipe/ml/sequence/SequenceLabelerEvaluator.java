@@ -93,6 +93,20 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
       if (references[i].getType() == null) {
         references[i] = new Span(references[i].getStart(), references[i].getEnd(), "default");
       }
+      /*
+       * NEW BLOCK FOR WORD ACCURACY
+       */
+      //System.out.println("#######:\t"+references[i].toString());
+      //System.out.println("~~~~~~~:\t"+predictedNames[i].toString());
+      if (references[i].equals(predictedNames[i])) {
+    	  wordAccuracy.add(1);
+      }
+      else {
+    	  wordAccuracy.add(0);
+      }
+      /*
+       * END NEW BLOCK FOR WORD ACCURACY
+       */
     }
     fmeasure.updateScores(references, predictedNames);
     return new SequenceSample(reference.getTokens(), predictedNames, reference.isClearAdaptiveDataSet());

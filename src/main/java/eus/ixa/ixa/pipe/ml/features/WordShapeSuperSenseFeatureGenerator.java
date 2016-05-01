@@ -60,9 +60,9 @@ public class WordShapeSuperSenseFeatureGenerator extends CustomFeatureGenerator 
     for (int i = 0; i < token.length(); i++) {
 
       currentCharacter = token.charAt(i);
-      if (currentCharacter >= 'A' && currentCharacter <= 'Z') {
+      if (Character.isUpperCase(currentCharacter)) { //if (currentCharacter >= 'A' && currentCharacter <= 'Z')
         charType = 'X';
-      } else if (currentCharacter >= 'a' && currentCharacter <= 'z') {
+      } else if (Character.isLowerCase(currentCharacter)) { // else if (currentCharacter >= 'a' && currentCharacter <= 'z')
         charType = 'x';
       } else if (currentCharacter >= '0' && currentCharacter <= '9') {
         charType = 'd';

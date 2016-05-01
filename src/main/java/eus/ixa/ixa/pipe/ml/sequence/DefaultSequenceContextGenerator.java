@@ -1,5 +1,7 @@
 package eus.ixa.ixa.pipe.ml.sequence;
 
+import java.io.FileWriter; // DEBUG ONLY
+import java.io.IOException; // DEBUG ONLY
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +113,17 @@ public DefaultSequenceContextGenerator(AdaptiveFeatureGenerator... featureGenera
       features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
       features.add("ppo=" + ppo);
     }
-
+    // START DEBUG ONLY
+	try {
+		FileWriter writer = new FileWriter("DebugContext.txt", true);
+		writer.write("Feature List\t"+features.toString()+"\n");
+		writer.write("\r\n");   // write new line
+		writer.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+    	}
+    
+    // END DEBUG ONLY
     return features.toArray(new String[features.size()]);
   }
 }

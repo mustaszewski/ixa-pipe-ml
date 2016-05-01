@@ -140,7 +140,8 @@ public abstract class AbstractTrainer implements Trainer {
       System.exit(1);
     }
     System.out.println("Final Result: \n" + nerEvaluator.getFMeasure());
-    //System.out.println("Word accuracy: " + nerEvaluator.getWordAccuracy());
+    System.out.println("Word accuracy: " + nerEvaluator.getWordAccuracy());
+    System.out.println("Word Count: " + nerEvaluator.getWordCount());
     return trainedModel;
   }
 
