@@ -14,3 +14,10 @@ octave-core
 *.pydevproject
 *.settings
 *.checkstyle
+trainParams.txt
+trainMaxent.txt
+*.properties
+*.properties~
+*.tar.gz
+*.txt
+*~
