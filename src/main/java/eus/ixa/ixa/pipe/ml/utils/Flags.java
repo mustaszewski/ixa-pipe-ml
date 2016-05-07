@@ -43,6 +43,10 @@ public class Flags {
   public static final String DEFAULT_POSTAG_RANGE = "pos,posclass";
   public static final String DEFAULT_MFS_RANGE = "pos,posclass,lemma,mfs,no";
   public static final String DEFAULT_SUPERSENSE_RANGE = "mfs,monosemic";
+  public static final String DEFAULT_SUBLABEL_SEPARATOR = ":";
+  public static final String DEFAULT_SUBLABEL_CLASSES = "number:pl|sg";
+  public static final String DEFAULT_SUBLABEL_RANGE = "2:0";
+  
 
   /**
    * Default beam size for decoding.
@@ -207,7 +211,69 @@ public class Flags {
     }
     return tokenRangeFlag;
   }
+  
+  public static String getSublabelFeatures(TrainingParameters params) {
+	String sublabelFlag = null;
+	if (params.getSettings().get("SublabelFeatures") != null) {
+		sublabelFlag = params.getSettings().get("SublabelFeatures");
+	} else {
+		sublabelFlag = Flags.DEFAULT_FEATURE_FLAG;
+	}
+	return sublabelFlag;
+  }
 
+  
+  public static String getSublabelSeparator(TrainingParameters params) {
+    String sublabelSeparatorFlag = null;
+    if (params.getSettings().get("SublabelSeparator") != null) {
+    	sublabelSeparatorFlag = params.getSettings().get("SublabelSeparator");
+    } else {
+    	sublabelSeparatorFlag = DEFAULT_SUBLABEL_SEPARATOR;
+    }
+    return sublabelSeparatorFlag;
+  }
+  
+ 
+  public static String getSublabelClasses(TrainingParameters params) {
+    String sublabelClassesFlag = null;
+    if (params.getSettings().get("SublabelClasses") != null) {
+    	sublabelClassesFlag = params.getSettings().get("SublabelClasses");
+    } else {
+    	sublabelClassesFlag = DEFAULT_SUBLABEL_CLASSES;
+    }
+    return sublabelClassesFlag;
+  }
+  
+  public static String getSublabelWordclass(TrainingParameters params) {
+	    String sublabelWordclassFlag = null;
+	    if (params.getSettings().get("SublabelWordclass") != null) {
+	    	sublabelWordclassFlag = params.getSettings().get("SublabelWordclass");
+	    } else {
+	    	sublabelWordclassFlag = DEFAULT_SENTENCE_BEGIN;
+	    }
+	    return sublabelWordclassFlag;
+	  }
+  
+  
+  public static String getSublabelRange(TrainingParameters params) {
+	    String sublabelRangeFlag = null;
+	    if (params.getSettings().get("SublabelRange") != null) {
+	    	sublabelRangeFlag = params.getSettings().get("SublabelRange");
+	    } else {
+	    	sublabelRangeFlag = Flags.DEFAULT_SUBLABEL_RANGE;
+	    }
+	    return sublabelRangeFlag;
+	  }
+  
+  public static String[] processSublabelRange(String sublabelRangeFlag) {
+	    String[] sublabelRangeArray = sublabelRangeFlag.split("[ :-]");
+	    if (!sublabelRangeArray[1].equals("0")) {
+	      System.err.println("The second field (after colon) of SublabelRange must be 0 but got " + sublabelRangeArray[1]);
+	      System.exit(1);
+	    }
+	  return sublabelRangeArray;
+	}
+  
   public static String getTokenClassFeatures(TrainingParameters params) {
     String tokenClassFlag = null;
     if (params.getSettings().get("TokenClassFeatures") != null) {
@@ -256,6 +322,66 @@ public class Flags {
     }
     return outcomePriorFlag;
   }
+  
+  public static String getPrevOutcomesFeatures(TrainingParameters params) {
+	String prevOutcomesFlag = null;
+	if (params.getSettings().get("PrevOucomesFeatures") != null) {
+		prevOutcomesFlag = params.getSettings().get("PrevOucomesFeatures");
+	} else {
+		prevOutcomesFlag = Flags.DEFAULT_FEATURE_FLAG;
+	}
+	return prevOutcomesFlag;
+  }
+  
+  public static String getPrevOutcomesFeaturesRange(TrainingParameters params) {
+	    String prevOutcomesFlag = null;
+	    if (params.getSettings().get("PrevOutcomesRange") != null) {
+	      prevOutcomesFlag = params.getSettings().get("PrevOutcomesRange");
+	    } else {
+	      prevOutcomesFlag = Flags.DEFAULT_PREFIX_END;
+	    }
+	    return prevOutcomesFlag;
+	  }
+  
+  public static String getPrevOutcomeNgramsFeatures(TrainingParameters params) {
+	    String prevOutNgramsFlag = null;
+	    if (params.getSettings().get("PrevOutcomeNgrams") != null) {
+	    	prevOutNgramsFlag = params.getSettings().get("PrevOutcomeNgrams");
+	    } else {
+	    	prevOutNgramsFlag = DEFAULT_SENTENCE_BEGIN;
+	    }
+	    return prevOutNgramsFlag;
+	  }
+  
+  public static String getPrevOutcomeNgramsRange(TrainingParameters params) {
+	    String prevOutNgramRangeFlag = null;
+	    if (params.getSettings().get("PrevOutcomeNgramRange") != null) {
+	    	prevOutNgramRangeFlag = params.getSettings().get("PrevOutcomeNgramRange");
+	    } else {
+	    	prevOutNgramRangeFlag = DEFAULT_PREFIX_BEGIN;
+	    }
+	    return prevOutNgramRangeFlag;
+	  }
+  
+  public static String getPrevOutcomeTokenFeature(TrainingParameters params) {
+	    String prevOutTokenFlag = null;
+	    if (params.getSettings().get("PrevOutcomeTokenFeature") != null) {
+	    	prevOutTokenFlag = params.getSettings().get("PrevOutcomeTokenFeature");
+	    } else {
+	    	prevOutTokenFlag = DEFAULT_SENTENCE_BEGIN;
+	    }
+	    return prevOutTokenFlag;
+	  }
+  
+  public static String getPrevOutcomeTokenClassFeature(TrainingParameters params) {
+	    String prevOutTokenClassFlag = null;
+	    if (params.getSettings().get("PrevOutcomeTokenClassFeature") != null) {
+	    	prevOutTokenClassFlag = params.getSettings().get("PrevOutcomeTokenClassFeature");
+	    } else {
+	    	prevOutTokenClassFlag = DEFAULT_SENTENCE_BEGIN;
+	    }
+	    return prevOutTokenClassFlag;
+	  }
 
   public static String getPreviousMapFeatures(TrainingParameters params) {
     String previousMapFlag = null;
@@ -737,6 +863,11 @@ public class Flags {
     return !outcomePriorParam.equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
   }
   
+  public static boolean isPrevOutcomeFeatures(TrainingParameters params) {
+	    String prevOutParam = getPrevOutcomesFeatures(params);
+	    return !prevOutParam.equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
+	  }
+  
   public static boolean isWordShapeSuperSenseFeature(TrainingParameters params) {
     String tokenParam = getWordShapeSuperSenseFeatures(params);
     return !tokenParam.equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
@@ -750,6 +881,12 @@ public class Flags {
   public static boolean isTokenFeature(TrainingParameters params) {
     String tokenParam = getTokenFeatures(params);
     return !tokenParam.equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
+  }
+  
+
+  public static boolean isSublabelFeature(TrainingParameters params) {
+    String sublabelParam = getSublabelFeatures(params);
+    return !sublabelParam.equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
   }
   
   

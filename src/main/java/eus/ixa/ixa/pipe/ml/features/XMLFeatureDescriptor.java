@@ -18,9 +18,9 @@ package eus.ixa.ixa.pipe.ml.features;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import opennlp.tools.util.TrainingParameters;
+import java.util.Map;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -30,6 +30,7 @@ import org.jdom2.output.XMLOutputter;
 import eus.ixa.ixa.pipe.ml.utils.Flags;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 import eus.ixa.ixa.pipe.ml.utils.StringUtils;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Class to automatically generate the feature descriptor from a trainParams.properties file.
@@ -100,6 +101,40 @@ public final class XMLFeatureDescriptor {
       generators.addContent(tokenWindow);
       System.err.println("-> Token features added!: Window range " + leftWindow + ":" + rightWindow);
     }
+
+    if (Flags.isSublabelFeature(params)) {
+        setWindow(params);
+        HashMap<String, String> sublabelFeatures = new HashMap <String, String> ();
+        String sublabelSeparator = Flags.getSublabelSeparator(params);
+        String wordclassFlag = Flags.getSublabelWordclass(params);
+        String sublabelClasses = Flags.getSublabelClasses(params);
+        String[] sublabelClassesList = sublabelClasses.split(",");
+        // Put the previously retrieved list in a HashMap with Category as key and possible Values as values
+        for (String pair : sublabelClassesList) {
+          sublabelFeatures.put(pair.split(":")[0], pair.split(":")[1]);
+        }
+        String sublabelRange = Flags.getSublabelRange(params);
+        String[] rangeArray = Flags.processSublabelRange(sublabelRange);
+        int leftwin = Integer.parseInt(rangeArray[0])-1;
+        Element sublabelFeature = new Element("custom");
+        sublabelFeature.setAttribute("class", SublabelFeatureGenerator.class.getName());
+        sublabelFeature.setAttribute("separator", sublabelSeparator);
+        sublabelFeature.setAttribute("wordClass", wordclassFlag);
+        // Place the morphological categories and its according values in XML elements
+        for (Map.Entry<String, String> entry : sublabelFeatures.entrySet()) {
+        	String category = entry.getKey();
+        	String values = entry.getValue();
+        	sublabelFeature.setAttribute(category, values);
+        	}
+        Element sublabelWindow = new Element("window");
+        sublabelWindow.setAttribute("prevLength", Integer.toString(leftwin));
+        // right window will has to be zero because only prior decisions are to be retrieved
+        sublabelWindow.setAttribute("nextLength", Integer.toString(0));
+        sublabelWindow.addContent(sublabelFeature);
+        generators.addContent(sublabelWindow);
+        System.err.println("-> Sublabel Features added!: Window range " + rangeArray[0] + ":0");
+      }
+    
     if (Flags.isTokenClassFeature(params)) {
       setWindow(params);
       String tokenClassFeatureRange = Flags.getTokenClassFeaturesRange(params);
@@ -130,6 +165,25 @@ public final class XMLFeatureDescriptor {
       generators.addContent(outcomePriorFeature);
       System.err.println("-> Outcome Prior Features added!");
     }
+    
+    if (Flags.isPrevOutcomeFeatures(params)) {
+    	String outcomesRange = Flags.getPrevOutcomesFeaturesRange(params);
+    	String outcomeNgramFeatures = Flags.getPrevOutcomeNgramsFeatures(params);
+    	String ngramRange = Flags.getPrevOutcomeNgramsRange(params);
+    	String outcomeToken = Flags.getPrevOutcomeTokenFeature(params);
+    	String outcomeTokenClass = Flags.getPrevOutcomeTokenClassFeature(params);
+    	
+        Element prevOutcomeFeature = new Element("custom");
+        prevOutcomeFeature.setAttribute("class", PrevOutcomeFeatureGenerator.class.getName());
+        prevOutcomeFeature.setAttribute("outcomesRange", outcomesRange);
+        prevOutcomeFeature.setAttribute("ngramFeatures", outcomeNgramFeatures);
+        prevOutcomeFeature.setAttribute("ngramRange", ngramRange);
+        prevOutcomeFeature.setAttribute("outcomeTokenFeature", outcomeToken);
+        prevOutcomeFeature.setAttribute("outcomeTokenClassFeature", outcomeTokenClass);
+        generators.addContent(prevOutcomeFeature);
+        System.err.println("-> Previous Outcome Features added!");
+      }
+    
     if (Flags.isPreviousMapFeature(params)) {
       Element previousMapFeature = new Element("custom");
       previousMapFeature.setAttribute("class", PreviousMapFeatureGenerator.class.getName());

@@ -94,12 +94,13 @@ public DefaultSequenceContextGenerator(AdaptiveFeatureGenerator... featureGenera
     for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
       featureGenerator.createFeatures(features, tokens, index, preds);
     }
-
+/*
     //previous outcome features
     String po = BilouCodec.OTHER;
     String ppo = BilouCodec.OTHER;
 
     // TODO: These should be moved out here in its own feature generator!
+     * Done by mustaszewski: moved to PrevOutcomeFeatureGenerator (including some more previous outcome-relate features)
     if (preds != null) {
       if (index > 1){
         ppo = preds[index-2];
@@ -113,6 +114,7 @@ public DefaultSequenceContextGenerator(AdaptiveFeatureGenerator... featureGenera
       features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
       features.add("ppo=" + ppo);
     }
+    */
     // START DEBUG ONLY
 	try {
 		FileWriter writer = new FileWriter("DebugContext.txt", true);
