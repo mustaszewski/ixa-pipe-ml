@@ -138,9 +138,11 @@ public final class XMLFeatureDescriptor {
     if (Flags.isTokenClassFeature(params)) {
       setWindow(params);
       String tokenClassFeatureRange = Flags.getTokenClassFeaturesRange(params);
+      String tokenClassFeatureType = Flags.getTokenClassFeaturesType(params);
       Element tokenClassFeature = new Element("custom");
       tokenClassFeature.setAttribute("class", TokenClassFeatureGenerator.class.getName());
       tokenClassFeature.setAttribute("range", tokenClassFeatureRange);
+      tokenClassFeature.setAttribute("type", tokenClassFeatureType);
       Element tokenClassWindow = new Element("window");
       tokenClassWindow.setAttribute("prevLength", Integer.toString(leftWindow));
       tokenClassWindow.setAttribute("nextLength", Integer.toString(rightWindow));

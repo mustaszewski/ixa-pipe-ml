@@ -33,6 +33,7 @@ public class Flags {
   public static final String DEFAULT_WINDOW = "2:2";
   public static final String DEFAULT_TOKEN_RANGE = "lower";
   public static final String DEFAULT_TOKENCLASS_RANGE = "lower,wac";
+  public static final String DEFAULT_TOKENCLASS_TYPE = "NERC";
   public static final String DEFAULT_SENTENCE_BEGIN = "true";
   public static final String DEFAULT_SENTENCE_END = "false";
   public static final String DEFAULT_PREFIX_BEGIN = "3";
@@ -302,7 +303,17 @@ public class Flags {
     }
     return mfsFlagArray;
   }
-
+  
+  public static String getTokenClassFeaturesType(TrainingParameters params) {
+    String tokenClassTypeFlag = null;
+    if (params.getSettings().get("TokenClassFeaturesType") != null) {
+      tokenClassTypeFlag = params.getSettings().get("TokenClassFeaturesType");
+    } else {
+      tokenClassTypeFlag = DEFAULT_TOKENCLASS_TYPE;
+    }
+    return tokenClassTypeFlag;
+  }
+  
   public static String getWordShapeSuperSenseFeatures(TrainingParameters params) {
     String tokenClassFlag = null;
     if (params.getSettings().get("WordShapeSuperSenseFeatures") != null) {

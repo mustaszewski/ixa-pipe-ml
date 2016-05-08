@@ -42,6 +42,7 @@ import opennlp.tools.util.featuregen.StringPattern;
  * <li>sc - single capital letter</li>
  * <li>ac - all capital letters</li>
  * <li>ic - initial capital letter</li>
+ * <li>cp - a capital letter followed by a period
  * <li>other - other</li>
  * </ul>
  */
@@ -50,17 +51,27 @@ public class TokenClassFeatureGenerator extends CustomFeatureGenerator {
   private boolean isLower;
   private boolean isWordAndClassFeature;
   private static Pattern capPeriod;
+  private String classType; //
   static {
-    capPeriod = Pattern.compile("^[A-Z]\\.$");
+    capPeriod = Pattern.compile("^\\p{javaUpperCase}\\.$"); //Pattern.compile("\\p{Lu}"); // or "\\p{javaUpperCase}" //orig: Pattern.compile("^[A-Z]\\.$")
   }
+ 
 
   public TokenClassFeatureGenerator() {
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] preds) {
-    String wordClass = tokenShapeFeature(tokens[index]);
-    features.add("wc=" + wordClass);
+	
+	String wordClass = "";
+	if (classType.equals("NERC")) {
+	  wordClass = tokenShapeFeature(tokens[index]);
+      features.add("wc=" + wordClass);
+	}
+	else if (classType.equals("POS")) {
+	  wordClass = tokenShapeFeature4POS(tokens[index]);
+      features.add("WC4POS=" + wordClass);
+	}
 
     if (isWordAndClassFeature) {
       if (isLower) {
@@ -118,6 +129,52 @@ public class TokenClassFeatureGenerator extends CustomFeatureGenerator {
     return (feat);
   }
   
+  public static String tokenShapeFeature4POS(String token) {
+
+	    StringPattern pattern = StringPattern.recognize(token);
+
+	    String feat;
+	    if (pattern.isAllLowerCaseLetter()) { // UNCHANGED
+	      feat = "lc";
+	      
+	    } /*else if (pattern.digits() == 2) {
+	      feat = "2d";
+	    } else if (pattern.digits() == 4) {
+	      feat = "4d";
+	    }*/
+	    else if (pattern.containsDigit()) {
+	      if (pattern.containsLetters()) {
+	        feat = "an";
+	      } else {
+	    	  feat = "num";
+	      }
+	      
+	      /*else if (pattern.containsHyphen()) {
+	        feat = "dd";
+	      } else if (pattern.containsSlash()) {
+	        feat = "ds";
+	      } else if (pattern.containsComma()) {
+	        feat = "dc";
+	      } else if (pattern.containsPeriod()) {
+	        feat = "dp";
+	      } else {
+	        feat = "num";
+	      }*/
+	    } else if (pattern.isAllCapitalLetter() && token.length() == 1) { // UNCHANGED
+	      feat = "sc";
+	    } else if (pattern.isAllCapitalLetter()) { // UNCHANGED
+	      feat = "ac";
+	    } else if (capPeriod.matcher(token).find()) { //UNCHANGED
+	      feat = "cp";
+	    } else if (pattern.isInitialCapitalLetter()) { //UNCHANGED
+	      feat = "ic";
+	    } else {
+	      feat = "other"; //UNCHANGED
+	    }
+
+	    return (feat);
+	  }
+  
   @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
   }
@@ -146,6 +203,8 @@ public class TokenClassFeatureGenerator extends CustomFeatureGenerator {
     if (rangeArray[1].equalsIgnoreCase("wac")) {
       isWordAndClassFeature = true;
     }
+    String type = properties.get("type");
+    this.classType = type;
   }
 
 }
