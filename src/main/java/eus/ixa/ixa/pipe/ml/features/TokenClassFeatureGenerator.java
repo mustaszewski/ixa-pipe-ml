@@ -70,7 +70,7 @@ public class TokenClassFeatureGenerator extends CustomFeatureGenerator {
 	}
 	else if (classType.equals("POS")) {
 	  wordClass = tokenShapeFeature4POS(tokens[index]);
-      features.add("WC4POS=" + wordClass);
+      features.add("wc=" + wordClass);
 	}
 
     if (isWordAndClassFeature) {

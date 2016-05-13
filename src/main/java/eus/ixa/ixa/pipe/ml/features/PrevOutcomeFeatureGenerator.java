@@ -82,7 +82,7 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 			String ngramValues = prevTags.get(0);
 			for (int x = 1, limit = prevTags.size(); x < limit; x++) {
 				if (x < ngramRange) {
-					ngramValues = prevTags.get(x) + "|" + ngramValues;
+					ngramValues = prevTags.get(x) + "," + ngramValues;
 
 					features.add(ngramFeatureLabels.get(x + 1) + "=" + ngramValues);
 				}
@@ -108,7 +108,7 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 		HashMap<Integer, String> labels = new HashMap<Integer, String>();
 		labels.put(1, "tag-1");
 		for (int i = 2, max = Integer.parseInt(properties.get("ngramRange")); i <= max; i++) {
-			labels.put(i, "tag-" + i + "|" + labels.get(i - 1));
+			labels.put(i, "tag-" + i + "," + labels.get(i - 1));
 		}
 		return labels;
 	}
