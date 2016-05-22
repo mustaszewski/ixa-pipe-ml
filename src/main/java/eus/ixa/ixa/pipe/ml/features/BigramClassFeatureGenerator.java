@@ -27,13 +27,28 @@ import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
  *
  */
 public class BigramClassFeatureGenerator extends FeatureGeneratorAdapter {
+	private String classType = "POS"; // TO DO: Get this dynamically from properties file
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
-    String wc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index]);
+	String wc, pwc, nwc;
+	wc = pwc = nwc = null;
+	if (classType.equals("POS")) {
+		wc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index]);
+	}
+	else {
+		wc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index]);
+	}
+    
     //bi-gram features 
     if (index > 0) {
       features.add("pw,w=" + tokens[index-1] + "," + tokens[index]);
-      String pwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 1]);
+      if (classType.equals("POS")) {
+    	  pwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index - 1]);
+      }
+      else {
+    	  pwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 1]);
+      }
+      
       features.add("pwc,wc=" + pwc + "," + wc);
       if (Flags.DEBUG) {
         System.err.println("-> " + tokens[index] + ": pw,w=" + tokens[index-1] + "," + tokens[index]);
@@ -42,7 +57,12 @@ public class BigramClassFeatureGenerator extends FeatureGeneratorAdapter {
     }
     if (index + 1 < tokens.length) {
       features.add("w,nw=" + tokens[index] + "," + tokens[index + 1]);
-      String nwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 1]);
+      if (classType.equals("POS")) {
+    	  nwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index + 1]);
+      }
+      else {
+    	  nwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 1]);
+      }
       features.add("wc,nc=" + wc + "," + nwc);
       if (Flags.DEBUG) {
         System.err.println("-> " + tokens[index] + ": w,nw=" + tokens[index] + "," + tokens[index + 1]);

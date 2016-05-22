@@ -27,21 +27,46 @@ import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
  * 
  */
 public class TrigramClassFeatureGenerator extends FeatureGeneratorAdapter {
+	String classType = "POS"; // TO DO: GET THIS DYNAMICALLY
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    String wc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index]);
+	String wc, pwc, ppwc, nwc, nnwc;
+	wc = pwc = ppwc = nwc = nnwc = null;
+	if (classType.equals("POS")) {
+		wc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index]);
+	}
+	else {
+		wc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index]);
+	}
+    
     // trigram features
     if (index > 1) {
       features.add("ppw,pw,w=" + tokens[index - 2] + "," + tokens[index - 1] + "," + tokens[index]);
-      String pwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 1]);
-      String ppwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 2]);
+  	if (classType.equals("POS")) {
+        pwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index - 1]);
+        ppwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index - 2]);
+	}
+	else {
+	      pwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 1]);
+	      ppwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index - 2]);
+	}
+
       features.add("ppwc,pwc,wc=" + ppwc + "," + pwc + "," + wc);
     }
     if (index + 2 < tokens.length) {
       features.add("w,nw,nnw=" + tokens[index] + "," + tokens[index + 1] + "," + tokens[index + 2]);
-      String nwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 1]);
-      String nnwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 2]);
+      
+    	if (classType.equals("POS")) {
+    	      nwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index + 1]);
+    	      nnwc = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index + 2]);
+    	}
+    	else {
+    	      nwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 1]);
+    	      nnwc = TokenClassFeatureGenerator.tokenShapeFeature(tokens[index + 2]);
+    	}
+      
+
       features.add("wc,nwc,nnwc=" + wc + "," + nwc + "," + nnwc);
     }
   }

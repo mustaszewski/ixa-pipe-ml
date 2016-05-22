@@ -36,6 +36,7 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 	private static final String SB = "*SB*";
 	private Map<String, String> attributes;
 	private Map<Integer, String> ngramFeatureLabels;
+	private String classType = "POS"; // TO DO: Get this dynamically from properties file
 
 	public PrevOutcomeFeatureGenerator() {
 	}
@@ -99,7 +100,12 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 		// create PrevOutcomeTokenClassFeature if corresponding flag is 'true'
 		if (outcomeTokenClassFeat.equalsIgnoreCase("true")) {
 			if (previousOutcomes != null && index >= 0) {
-				features.add("po,wf=" + prevOutcomesAll[0] + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
+				if (classType.equals("POS")) {
+					features.add("po,wf=" + prevOutcomesAll[0] + "," + TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index]));
+				}
+				else {
+					features.add("po,wf=" + prevOutcomesAll[0] + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
+				}
 			}
 		}
 	}
