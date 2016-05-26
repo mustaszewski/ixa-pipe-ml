@@ -24,16 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ArtifactSerializer;
 import eus.ixa.ixa.pipe.ml.features.XMLFeatureDescriptor;
 import eus.ixa.ixa.pipe.ml.lemma.DictionaryLemmatizer;
 import eus.ixa.ixa.pipe.ml.resources.BrownCluster;
 import eus.ixa.ixa.pipe.ml.resources.ClarkCluster;
 import eus.ixa.ixa.pipe.ml.resources.Dictionary;
 import eus.ixa.ixa.pipe.ml.resources.MFSResource;
+import eus.ixa.ixa.pipe.ml.resources.MorfessorFeature;
 import eus.ixa.ixa.pipe.ml.resources.SequenceModelResource;
 import eus.ixa.ixa.pipe.ml.resources.Word2VecCluster;
 import eus.ixa.ixa.pipe.ml.sequence.SequenceCodec;
@@ -42,6 +39,10 @@ import eus.ixa.ixa.pipe.ml.sequence.SequenceLabelerModel;
 import eus.ixa.ixa.pipe.ml.utils.Flags;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 import eus.ixa.ixa.pipe.ml.utils.StringUtils;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
  * Training sequence labeler based on Apache OpenNLP Machine Learning API. This class creates
@@ -155,6 +156,21 @@ public class DefaultTrainer extends AbstractTrainer {
         loadResource(serializerId, artifactSerializers, word2vecFilePath, featureGenDescriptor, resources);
       }
     }
+    
+    if (Flags.isMorfessorFeatures(params)) {
+        String morfessorFeaturePath = Flags.getMorfessorFeatures(params);
+        String serializerId = "morfessorserializer";
+        List<File> morfessorFiles = Flags.getClusterLexiconFiles(morfessorFeaturePath);
+        for (File morfessorFile : morfessorFiles) {
+          String morfessorFilePath = morfessorFile.getCanonicalPath();
+          artifactSerializers.put(serializerId, new MorfessorFeature.MorfessorFeatureSerializer());
+          loadResource(serializerId, artifactSerializers, morfessorFilePath, featureGenDescriptor, resources);
+        }
+      }
+    
+
+    
+    
     if (Flags.isDictionaryFeatures(params)) {
       String dictDir = Flags.getDictionaryFeatures(params);
       String serializerId = "dictionaryserializer";

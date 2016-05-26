@@ -1,9 +1,9 @@
 package eus.ixa.ixa.pipe.ml.sequence;
 
-/*
+
 import java.io.FileWriter; // DEBUG ONLY
 import java.io.IOException; // DEBUG ONLY
-*/
+
 import java.util.ArrayList;
 import java.util.List;
 

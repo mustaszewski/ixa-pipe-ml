@@ -594,6 +594,16 @@ public class Flags {
     }
     return word2vecFlag;
   }
+  
+  public static String getMorfessorFeatures(TrainingParameters params) {
+	    String morfessorFlag = null;
+	    if (params.getSettings().get("MorfessorFeatures") != null) {
+	      morfessorFlag = params.getSettings().get("MorfessorFeatures");
+	    } else {
+	    	morfessorFlag = Flags.DEFAULT_FEATURE_FLAG;
+	    }
+	    return morfessorFlag;
+	  }
 
   public static String getBrownFeatures(TrainingParameters params) {
     String brownFlag = null;
@@ -808,6 +818,12 @@ public class Flags {
     return !word2vecClusterFeatures
         .equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
   }
+  
+  public static boolean isMorfessorFeatures(TrainingParameters params) {
+	    String morfessorFeatures = getMorfessorFeatures(params);
+	    return !morfessorFeatures
+	        .equalsIgnoreCase(Flags.DEFAULT_FEATURE_FLAG);
+	  }
 
   public static boolean isClarkFeatures(TrainingParameters params) {
     String clarkFeatures = getClarkFeatures(params);

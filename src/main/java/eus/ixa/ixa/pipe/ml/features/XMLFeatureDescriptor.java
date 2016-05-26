@@ -354,6 +354,20 @@ public final class XMLFeatureDescriptor {
       }
       System.err.println("-> Word2Vec Clusters Features added!");
     }
+    
+    if (Flags.isMorfessorFeatures(params)) {
+        String morfessorPath = Flags.getMorfessorFeatures(params);
+        List<File> morfessorFiles = Flags.getClusterLexiconFiles(morfessorPath);
+        for (File morfessorFile : morfessorFiles) {
+          Element morfessorFeatures = new Element("custom");
+          morfessorFeatures.setAttribute("class", MorfessorFeatureGenerator.class.getName());
+          morfessorFeatures.setAttribute("dict", IOUtils.normalizeLexiconName(morfessorFile.getName()));
+          generators.addContent(morfessorFeatures);
+        }
+        System.err.println("-> Morfessor Suffix Features added!");
+      }
+    
+   
     //Morphological features
     if (Flags.isPOSTagModelFeatures(params)) {
       setWindow(params);
