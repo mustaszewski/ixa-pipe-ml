@@ -21,7 +21,7 @@ import java.util.Map;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.CustomFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
-
+import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
 
 /**
  * Adds bigram features based on tokens and token class using
@@ -30,53 +30,41 @@ import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
  * @author mustaszewski
  *
  */
-public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
-	private static final String SB = "*SB*";
+public class PrevOutcomeTokenFeatureGenerator extends CustomFeatureGenerator {
 	private Map<String, String> attributes;
+	private static final String SB = "*SB*";
 
-
-
-	public PrevOutcomeFeatureGenerator() {
+	public PrevOutcomeTokenFeatureGenerator() {
 	}
 
 	public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
 
-		// Get Attributes
-		int outcomesRange = Integer.parseInt(attributes.get("outcomesRange"));
-		//String ngramFeat = attributes.get("ngramFeatures");
-		//int ngramRange = Integer.parseInt(attributes.get("ngramRange"));
+		String classType = attributes.get("type");
+		String outcomeTokenClassFeat = attributes.get("outcomeTokenClassFeature");
 
+		String po = null;
+		String tokClass = null;
+		
+		if (previousOutcomes != null) {
+			if (index > 0) {
+				po = previousOutcomes[index - 1];
+			}
+			else {
+				po = SB;
+			}
+			features.add("tag-1,w=" + po + "," + tokens[index]);
 
-		// Get previous outcomes depending on index and outcomes range
-		String[] prevOutcomesAll = new String[outcomesRange];
-		for (int i = 1, ll = outcomesRange; i <= ll; i++) {
-			if (index - i >= 0) {
-				prevOutcomesAll[i - 1] = previousOutcomes[index - i];
+			if (classType.equals("POS")) {
+				tokClass = TokenClassFeatureGenerator.tokenShapeFeature4POS(tokens[index]);
 			} else {
-				prevOutcomesAll[i - 1] = SB;
+				tokClass = FeatureGeneratorUtil.tokenFeature(tokens[index]);
+
+			}
+			if (outcomeTokenClassFeat.equalsIgnoreCase("true")) {
+				features.add("tag-1,wf=" + po + "," + tokClass);
 			}
 		}
-
-		// Get longest possible array of previous outcomes at current index
-		int maxOutcomeLength;
-		if (index + 1 <= outcomesRange) {
-			maxOutcomeLength = index + 1;
-		} else {
-			maxOutcomeLength = outcomesRange;
-		}
-
-		// pass values of prevOutcomesAll array to new array depending on
-		// maxOutcomeLength
-		//ArrayList<String> prevTags = new ArrayList<String>();
-		if (prevOutcomesAll != null) {
-			for (int i = 1, mol = maxOutcomeLength + 1; i < mol; i++) {
-				features.add("tag-" + i + "=" + prevOutcomesAll[i - 1]);
-				//prevTags.add(prevOutcomesAll[i - 1]);
-			}
-		}
-
 	}
-
 
 	@Override
 	public void updateAdaptiveData(String[] tokens, String[] outcomes) {

@@ -15,6 +15,8 @@
  */
 package eus.ixa.ixa.pipe.ml.features;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,26 +32,25 @@ import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
  * @author mustaszewski
  *
  */
-public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
+public class PrevOutcomeNGramGenerator extends CustomFeatureGenerator {
 	private static final String SB = "*SB*";
 	private Map<String, String> attributes;
+	private Map<Integer, String> ngramFeatureLabels;
 
-
-
-	public PrevOutcomeFeatureGenerator() {
+	public PrevOutcomeNGramGenerator() {
 	}
 
 	public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
 
 		// Get Attributes
-		int outcomesRange = Integer.parseInt(attributes.get("outcomesRange"));
+		//int outcomesRange = Integer.parseInt(attributes.get("outcomesRange"));
 		//String ngramFeat = attributes.get("ngramFeatures");
-		//int ngramRange = Integer.parseInt(attributes.get("ngramRange"));
+		int ngramRange = Integer.parseInt(attributes.get("ngramRange"));
 
 
 		// Get previous outcomes depending on index and outcomes range
-		String[] prevOutcomesAll = new String[outcomesRange];
-		for (int i = 1, ll = outcomesRange; i <= ll; i++) {
+		String[] prevOutcomesAll = new String[ngramRange];
+		for (int i = 1, ll = ngramRange; i <= ll; i++) {
 			if (index - i >= 0) {
 				prevOutcomesAll[i - 1] = previousOutcomes[index - i];
 			} else {
@@ -59,24 +60,47 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 
 		// Get longest possible array of previous outcomes at current index
 		int maxOutcomeLength;
-		if (index + 1 <= outcomesRange) {
+		if (index + 1 <= ngramRange) {
 			maxOutcomeLength = index + 1;
 		} else {
-			maxOutcomeLength = outcomesRange;
+			maxOutcomeLength = ngramRange;
 		}
 
 		// pass values of prevOutcomesAll array to new array depending on
 		// maxOutcomeLength
-		//ArrayList<String> prevTags = new ArrayList<String>();
+		ArrayList<String> prevTags = new ArrayList<String>();
 		if (prevOutcomesAll != null) {
 			for (int i = 1, mol = maxOutcomeLength + 1; i < mol; i++) {
-				features.add("tag-" + i + "=" + prevOutcomesAll[i - 1]);
-				//prevTags.add(prevOutcomesAll[i - 1]);
+				//features.add("tag-" + i + "=" + prevOutcomesAll[i - 1]);
+				prevTags.add(prevOutcomesAll[i - 1]);
 			}
 		}
 
+		// create ngrams from prevTags
+
+			String ngramValues = prevTags.get(0);
+			for (int x = 1, limit = prevTags.size(); x < limit; x++) {
+				if (x < ngramRange) {
+					ngramValues = prevTags.get(x) + "," + ngramValues;
+
+					features.add(ngramFeatureLabels.get(x + 1) + "=" + ngramValues);
+				}
+			}
+		
+
+
+
+
 	}
 
+	private HashMap<Integer, String> getNgramFeatureLabels(Map<String, String> properties) {
+		HashMap<Integer, String> labels = new HashMap<Integer, String>();
+		labels.put(1, "tag-1");
+		for (int i = 2, max = Integer.parseInt(properties.get("ngramRange")); i <= max; i++) {
+			labels.put(i, "tag-" + i + "," + labels.get(i - 1));
+		}
+		return labels;
+	}
 
 	@Override
 	public void updateAdaptiveData(String[] tokens, String[] outcomes) {
@@ -90,5 +114,6 @@ public class PrevOutcomeFeatureGenerator extends CustomFeatureGenerator {
 	public void init(Map<String, String> properties, FeatureGeneratorResourceProvider resourceProvider)
 			throws InvalidFormatException {
 		attributes = properties;
+		ngramFeatureLabels = getNgramFeatureLabels(properties);
 	}
 }

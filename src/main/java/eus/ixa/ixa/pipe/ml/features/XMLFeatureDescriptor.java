@@ -150,6 +150,7 @@ public final class XMLFeatureDescriptor {
       generators.addContent(tokenClassWindow);
       System.err.println("-> Token Class Features added!: Window range " + leftWindow + ":" + rightWindow);
     }
+    
     if (Flags.isWordShapeSuperSenseFeature(params)) {
       setWindow(params);
       Element wordShapeSuperSenseFeature = new Element("custom");
@@ -168,22 +169,40 @@ public final class XMLFeatureDescriptor {
       System.err.println("-> Outcome Prior Features added!");
     }
     
-    if (Flags.isPrevOutcomeFeatures(params)) {
+    if (Flags.isPrevOutcomesFeatures(params)) {
     	String outcomesRange = Flags.getPrevOutcomesFeaturesRange(params);
-    	String outcomeNgramFeatures = Flags.getPrevOutcomeNgramsFeatures(params);
-    	String ngramRange = Flags.getPrevOutcomeNgramsRange(params);
-    	String outcomeToken = Flags.getPrevOutcomeTokenFeature(params);
-    	String outcomeTokenClass = Flags.getPrevOutcomeTokenClassFeature(params);
-    	
         Element prevOutcomeFeature = new Element("custom");
         prevOutcomeFeature.setAttribute("class", PrevOutcomeFeatureGenerator.class.getName());
         prevOutcomeFeature.setAttribute("outcomesRange", outcomesRange);
-        prevOutcomeFeature.setAttribute("ngramFeatures", outcomeNgramFeatures);
-        prevOutcomeFeature.setAttribute("ngramRange", ngramRange);
-        prevOutcomeFeature.setAttribute("outcomeTokenFeature", outcomeToken);
-        prevOutcomeFeature.setAttribute("outcomeTokenClassFeature", outcomeTokenClass);
         generators.addContent(prevOutcomeFeature);
         System.err.println("-> Previous Outcome Features added!");
+      }
+    
+    if (Flags.isPrevOutcomeNgramFeatures(params)) {
+    	String ngramRange = Flags.getPrevOutcomeNgramRange(params);
+        Element prevOutcomeNgramFeature = new Element("custom");
+        prevOutcomeNgramFeature.setAttribute("class", PrevOutcomeNGramGenerator.class.getName());
+        prevOutcomeNgramFeature.setAttribute("ngramRange", ngramRange);
+        generators.addContent(prevOutcomeNgramFeature);
+        System.err.println("-> Previous Outcome N-Gram Features added!");
+      }
+    
+    if (Flags.isPrevOutcomeTokenFeatures(params)) {
+    	String outcomeTokenClass = Flags.getPrevOutcomeTokenClassFeature(params);
+    	String tokenClassFeatureType = Flags.getTokenClassFeaturesType(params);
+        Element prevOutcomeTokenFeature = new Element("custom");
+        prevOutcomeTokenFeature.setAttribute("class", PrevOutcomeTokenFeatureGenerator.class.getName());
+        prevOutcomeTokenFeature.setAttribute("outcomeTokenClassFeature", outcomeTokenClass);
+        prevOutcomeTokenFeature.setAttribute("type", tokenClassFeatureType);
+        generators.addContent(prevOutcomeTokenFeature);
+        System.err.println("-> Previous Outcome-Token Features added!");
+      }
+    
+    if (Flags.isOutcomePriorFeature(params)) {
+        Element outcomePriorFeature = new Element("custom");
+        outcomePriorFeature.setAttribute("class", OutcomePriorFeatureGenerator.class.getName());
+        generators.addContent(outcomePriorFeature);
+        System.err.println("-> Outcome Prior Features added!");
       }
     
     if (Flags.isPreviousMapFeature(params)) {
