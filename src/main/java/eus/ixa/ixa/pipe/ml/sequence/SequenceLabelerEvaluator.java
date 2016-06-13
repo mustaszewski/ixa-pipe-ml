@@ -16,6 +16,9 @@
  */
 
 package eus.ixa.ixa.pipe.ml.sequence;
+import java.util.ArrayList;
+import java.util.Set;
+
 import eus.ixa.ixa.pipe.ml.utils.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
@@ -34,6 +37,9 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
 
   private FMeasure fmeasure = new FMeasure();
   private Mean wordAccuracy = new Mean();
+  private Mean knownAccuracy = new Mean();
+  private Mean unknownAccuracy = new Mean();
+  private ArrayList<String> knownWordList = new ArrayList<String>();
 
 
   /**
@@ -41,6 +47,7 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
    * {@link SequenceSample} objects.
    */
   private SequenceLabeler sequenceLabeler;
+  private Set<String> trainingVocabulary = null;
 
   /**
    * Initializes the current instance with the given
@@ -49,10 +56,17 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
    * @param nameFinder the {@link SequenceLabeler} to evaluate.
    * @param listeners evaluation sample listeners
    */
+  // This constructor is currently not in use
   public SequenceLabelerEvaluator(SequenceLabeler nameFinder, SequenceLabelerEvaluationMonitor ... listeners) {
     super(listeners);
     this.sequenceLabeler = nameFinder;
   }
+  
+  public SequenceLabelerEvaluator(SequenceLabeler nameFinder, Set<String> trainingTokens, SequenceLabelerEvaluationMonitor ... listeners) {
+	    super(listeners);
+	    this.sequenceLabeler = nameFinder;
+	    this.trainingVocabulary = trainingTokens;
+	  }
 
   /**
    * Evaluates the given reference {@link SequenceSample} object.
@@ -74,6 +88,19 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
     }
 
     Span[] predictedNames = sequenceLabeler.tag(reference.getTokens());
+    String [] referenceTokens = reference.getTokens();
+    
+    
+    // If using the constructor SequenceLabelerEvaluator(SequenceLabeler nameFinder, SequenceLabelerEvaluationMonitor ... listeners), this will currently give an error because the field trainingVocabulary is not set
+    // Check whether token currently being evaluated is in training set vocabulary
+    for (String tok : referenceTokens)
+    {
+    	if (trainingVocabulary.contains(tok)) {
+    		knownWordList.add(tok);
+    	}
+    	else {
+    	}
+    }
     Span[] references = reference.getSequences();
     /*String[] predictedTags = StringUtils.getTagsFromSpan(predictedNames, reference.getTokens());
     String[] referenceTags = StringUtils.getTagsFromSpan(references, reference.getTokens());
@@ -93,20 +120,27 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
       if (references[i].getType() == null) {
         references[i] = new Span(references[i].getStart(), references[i].getEnd(), "default");
       }
-      /*
-       * NEW BLOCK FOR WORD ACCURACY
-       */
-      //System.out.println("#######:\t"+references[i].toString());
-      //System.out.println("~~~~~~~:\t"+predictedNames[i].toString());
+
+
+      
+      String currentToken = referenceTokens[i];
       if (references[i].equals(predictedNames[i])) {
     	  wordAccuracy.add(1);
+    	  // If current token is in training set vocabulary update KnownWordAccuracy
+    	  if (trainingVocabulary.contains(currentToken)) {
+    		  knownAccuracy.add(1);
+    	  } else {
+    		  unknownAccuracy.add(1);
+    	  } 
       }
       else {
     	  wordAccuracy.add(0);
+    	  if (trainingVocabulary.contains(currentToken)) {
+    		  knownAccuracy.add(0);
+    	  } else {
+    		  unknownAccuracy.add(0);
+    	  }
       }
-      /*
-       * END NEW BLOCK FOR WORD ACCURACY
-       */
     }
     fmeasure.updateScores(references, predictedNames);
     return new SequenceSample(reference.getTokens(), predictedNames, reference.isClearAdaptiveDataSet());
@@ -124,9 +158,33 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
    *
    * @return the word accuracy
    */
-  public double getWordAccuracy() {
+  public double getTotalWordAccuracy() {
     return wordAccuracy.mean();
   }
+  
+  /**
+   * Retrieves the word accuracy for known words (i.e. tokens appearing in train set, thus known to model).
+   *
+   * This is defined as:
+   * word accuracy = correctly detected tags / total known words
+   *
+   * @return the known word accuracy
+   */
+  public double getKnownWordAccuracy() {
+	    return knownAccuracy.mean();
+	  }
+  
+  /**
+   * Retrieves the unknown word accuracy (i.e. tokens not appearing in train set, thus unknown to model).
+   *
+   * This is defined as:
+   * word accuracy = correctly detected tags / total unknown words
+   *
+   * @return the word accuracy
+   */
+  public double getUnknownWordAccuracy() {
+	    return unknownAccuracy.mean();
+	  }
   
   /**
    * Retrieves the total number of words considered

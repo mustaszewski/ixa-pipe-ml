@@ -16,10 +16,11 @@
 
 package eus.ixa.ixa.pipe.ml.train;
 
+//import java.io.FileWriter; //DebugOnly
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 import eus.ixa.ixa.pipe.ml.formats.CoNLL02Format;
 import eus.ixa.ixa.pipe.ml.formats.CoNLL03Format;
 import eus.ixa.ixa.pipe.ml.formats.LemmatizerFormat;
@@ -34,6 +35,8 @@ import eus.ixa.ixa.pipe.ml.sequence.SequenceSample;
 import eus.ixa.ixa.pipe.ml.sequence.SequenceSampleTypeFilter;
 import eus.ixa.ixa.pipe.ml.utils.Flags;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Abstract class for common training functionalities. Every other trainer class
@@ -104,6 +107,7 @@ public abstract class AbstractTrainer implements Trainer {
     this.trainData = params.getSettings().get("TrainSet");
     this.testData = params.getSettings().get("TestSet");
     trainSamples = getSequenceStream(trainData, clearTrainingFeatures, corpusFormat);
+    
     testSamples = getSequenceStream(testData, clearEvaluationFeatures, corpusFormat);
     this.beamSize = Flags.getBeamsize(params);
     this.sequenceCodec = Flags.getSequenceCodec(params);
@@ -128,20 +132,75 @@ public abstract class AbstractTrainer implements Trainer {
     }
     SequenceLabelerModel trainedModel = null;
     SequenceLabelerEvaluator nerEvaluator = null;
+    Set<String> trainSetVocabulary = null;
+    trainSetVocabulary = getTrainingTokens();
+
+    /*
+    // START DEBUG ONLY
+    System.out.println("\nH E A D E R");
+    SequenceSample blaSample = null;
+    ObjectStream<SequenceSample> blaTrainSamples;
+    int i = 1;
+    try {
+		blaTrainSamples = getSequenceStream(trainData, clearTrainingFeatures, corpusFormat);
+		while ((blaSample = blaTrainSamples.read()) != null) {
+			System.out.println("Sample: " + blaSample.getTokens().toString());
+			for (String x : blaSample.getTokens()) {
+				System.out.println("  ~ "+ x);
+				i += 1;
+			}
+		}
+		System.out.println("Count: " + i);
+		
+	} catch (IOException e2) {
+		// TODO Auto-generated catch block
+		e2.printStackTrace();
+	}
+    // END DEBUG ONLY
+    */
+    
     try {
       trainedModel = SequenceLabelerME.train(lang, null, trainSamples, params,
           nameClassifierFactory);
       SequenceLabelerME nerTagger = new SequenceLabelerME(trainedModel);
-      nerEvaluator = new SequenceLabelerEvaluator(nerTagger);
+      nerEvaluator = new SequenceLabelerEvaluator(nerTagger, trainSetVocabulary);
       nerEvaluator.evaluate(testSamples);
     } catch (IOException e) {
       System.err.println("IO error while loading traing and test sets!");
       e.printStackTrace();
       System.exit(1);
     }
-    System.out.println("Final Result: \n" + nerEvaluator.getFMeasure());
-    System.out.println("Word accuracy: " + nerEvaluator.getWordAccuracy());
-    System.out.println("Word Count: " + nerEvaluator.getWordCount());
+    
+    //System.out.println("Final Result: \n" + nerEvaluator2.getFMeasure());
+    System.out.println();
+    System.out.println("Total Word accuracy:\t" + nerEvaluator.getTotalWordAccuracy());
+    System.out.println("Known Word accuracy:\t" + nerEvaluator.getKnownWordAccuracy());
+    System.out.println("Unknown Word accuracy:\t" + nerEvaluator.getUnknownWordAccuracy());
+    System.out.println("Total Word Count:\t" + nerEvaluator.getWordCount());
+    System.out.println();
+
+    
+    /*
+    // START DEBUG ONLY
+	try {
+		FileWriter writer = new FileWriter("DebugEval.txt", true);
+		writer.write("ManifEntries:\t"+trainedModel.getNameFinderSequenceModel().getOutcomes());
+		writer.write("\n BLA:\t" + nameClassifierFactory.createManifestEntries().size()); 
+		System.out.println();
+		//writer.write("Factory:\t" +trainedModel.getFactory().toString() +"\n");
+		
+		//for (String x : trainedModel.) {
+		//	writer.write("  outcome: " + x);
+		//}
+
+		writer.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+    	}
+    
+    // END DEBUG ONLY
+    */
+    
     return trainedModel;
   }
 
@@ -234,6 +293,24 @@ public abstract class AbstractTrainer implements Trainer {
   
   public final int getBeamSize() {
     return beamSize;
+  }
+  
+  public final Set<String> getTrainingTokens() {
+	  Set<String> trainingTokens = new HashSet<String>();
+	  SequenceSample tS = null;
+	  ObjectStream<SequenceSample> trainSetSamples;
+	  try {
+		  trainSetSamples = getSequenceStream(trainData, clearTrainingFeatures, corpusFormat);
+		  while ((tS = trainSetSamples.read()) != null) {
+			  for (String tok : tS.getTokens()) {
+				  trainingTokens.add(tok);
+			  }
+		  }
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+	  return trainingTokens;
   }
 
 }

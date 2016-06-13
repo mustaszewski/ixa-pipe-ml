@@ -1,16 +1,17 @@
 package eus.ixa.ixa.pipe.ml.sequence;
 
-
+import java.io.FileWriter;
+import java.io.IOException;
+/*
 import java.io.FileWriter; // DEBUG ONLY
 import java.io.IOException; // DEBUG ONLY
-
+*/
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
-import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
@@ -117,7 +118,7 @@ public DefaultSequenceContextGenerator(AdaptiveFeatureGenerator... featureGenera
       features.add("ppo=" + ppo);
     }
     */
-    
+    /*
     // START DEBUG ONLY
 	try {
 		FileWriter writer = new FileWriter("DebugContext.txt", true);
@@ -129,7 +130,7 @@ public DefaultSequenceContextGenerator(AdaptiveFeatureGenerator... featureGenera
     	}
     
     // END DEBUG ONLY
-	
+	*/
     return features.toArray(new String[features.size()]);
   }
 }
