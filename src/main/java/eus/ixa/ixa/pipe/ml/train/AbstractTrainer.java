@@ -133,6 +133,7 @@ public abstract class AbstractTrainer implements Trainer {
     SequenceLabelerModel trainedModel = null;
     SequenceLabelerEvaluator nerEvaluator = null;
     Set<String> trainSetVocabulary = null;
+    //trainSetVocabulary = getTrainingTokens();
     trainSetVocabulary = getTrainingTokens();
 
     /*
@@ -312,5 +313,6 @@ public abstract class AbstractTrainer implements Trainer {
 		}
 	  return trainingTokens;
   }
+  
 
 }

@@ -175,10 +175,11 @@ public class CLI {
     String lang = parsedArguments.getString("language");
     String model = parsedArguments.getString("model");
     String testset = parsedArguments.getString("testset");
+    String trainset = parsedArguments.getString("trainset");
     String corpusFormat = parsedArguments.getString("corpusFormat");
     String netypes = parsedArguments.getString("types");
     String clearFeatures = parsedArguments.getString("clearFeatures");
-    Properties props = setEvalProperties(lang, model, testset, corpusFormat, netypes, clearFeatures);
+    Properties props = setEvalProperties(lang, model, testset, trainset, corpusFormat, netypes, clearFeatures);
     
       Evaluate evaluator = new Evaluate(props);
       if (parsedArguments.getString("evalReport") != null) {
@@ -235,6 +236,10 @@ public class CLI {
     evalParser.addArgument("-t", "--testset")
         .required(true)
         .help("The test or reference corpus.\n");
+    evalParser.addArgument("-tr", "--trainset")
+    	.required(false)
+    	.setDefault("none")
+    	.help("The training corpus; pass it to evaluate (un)known word accuracy.\n");
     evalParser.addArgument("--clearFeatures")
         .required(false)
         .choices("yes", "no", "docstart")
@@ -270,15 +275,17 @@ public class CLI {
    * Set a Properties object with the CLI parameters for evaluation.
    * @param model the model parameter
    * @param testset the reference set
+   * @param trainset the training set
    * @param corpusFormat the format of the testset
    * @param netypes the ne types to use in the evaluation
    * @return the properties object
    */
-  private Properties setEvalProperties(String language, String model, String testset, String corpusFormat, String netypes, String clearFeatures) {
+  private Properties setEvalProperties(String language, String model, String testset, String trainset, String corpusFormat, String netypes, String clearFeatures) {
     Properties evalProperties = new Properties();
     evalProperties.setProperty("language", language);
     evalProperties.setProperty("model", model);
     evalProperties.setProperty("testset", testset);
+    evalProperties.setProperty("trainset", trainset);
     evalProperties.setProperty("corpusFormat", corpusFormat);
     evalProperties.setProperty("types", netypes);
     evalProperties.setProperty("clearFeatures", clearFeatures);

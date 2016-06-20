@@ -17,9 +17,11 @@ package eus.ixa.ixa.pipe.ml.eval;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import opennlp.tools.util.ObjectStream;
@@ -51,6 +53,9 @@ public class Evaluate {
   /**
    * An instance of the probabilistic {@link SequenceLabelerME}.
    */
+  
+  //private ObjectStream<SequenceSample> trainSamples;
+  
   private SequenceLabeler sequenceLabeler;
   /**
    * The models to use for every language. The keys of the hash are the
@@ -58,6 +63,8 @@ public class Evaluate {
    */
   private static ConcurrentHashMap<String, SequenceLabelerModel> seqModels =
       new ConcurrentHashMap<String, SequenceLabelerModel>();
+  
+  private Set<String> trainSetVocabulary;
  
   /**
    * Construct an evaluator. It takes from the properties a model,
@@ -73,6 +80,7 @@ public class Evaluate {
     String clearFeatures = props.getProperty("clearFeatures");
     String model = props.getProperty("model");
     String testSet = props.getProperty("testset");
+    String trainSet = props.getProperty("trainset");
     String corpusFormat = props.getProperty("corpusFormat");
     String seqTypes = props.getProperty("types");
     
@@ -83,6 +91,10 @@ public class Evaluate {
     }
     seqModels.putIfAbsent(lang, new SequenceLabelerModel(new FileInputStream(model)));
     sequenceLabeler = new SequenceLabelerME(seqModels.get(lang));
+    
+    if (trainSet != "none") {
+    	trainSetVocabulary = getTrainingTokens(trainSet, clearFeatures, corpusFormat);
+    } 
   }
 
   /**
@@ -90,9 +102,19 @@ public class Evaluate {
    * @throws IOException if test corpus not loaded
    */
   public final void evaluate() throws IOException {
-    SequenceLabelerEvaluator evaluator = new SequenceLabelerEvaluator(sequenceLabeler);
+
+    //SequenceLabelerEvaluator evaluator = new SequenceLabelerEvaluator(sequenceLabeler);
+	SequenceLabelerEvaluator evaluator = new SequenceLabelerEvaluator(sequenceLabeler, trainSetVocabulary);
+    // nerEvaluator = new SequenceLabelerEvaluator(nerTagger, trainSetVocabulary);
     evaluator.evaluate(testSamples);
-    System.out.println(evaluator.getFMeasure());
+    //System.out.println(evaluator.getFMeasure());
+    System.out.println("\nTotal Word accuracy:\t" + evaluator.getTotalWordAccuracy());
+    if (trainSetVocabulary != null) { 
+      System.out.println("Known Word accuracy:\t" + evaluator.getKnownWordAccuracy());
+      System.out.println("Unknown Word accuracy:\t" + evaluator.getUnknownWordAccuracy());
+    }
+
+    System.out.println("Total Word Count:\t" + evaluator.getWordCount()+"\n");
     //TODO split F-measure and wordAccuracy
     //System.out.println(evaluator.getWordAccuracy());
   }
@@ -122,6 +144,24 @@ public class Evaluate {
         listeners.toArray(new SequenceLabelerEvaluationMonitor[listeners.size()]));
     evaluator.evaluate(testSamples);
     System.out.println(evaluator.getFMeasure());
+  }
+  
+  public final Set<String> getTrainingTokens(String trainData, String clearTrainingFeatures, String corpusFormat) {
+	  Set<String> trainingTokens = new HashSet<String>();
+	  SequenceSample tS = null;
+	  ObjectStream<SequenceSample> trainSetSamples;
+	  try {
+		  trainSetSamples = AbstractTrainer.getSequenceStream(trainData, clearTrainingFeatures, corpusFormat);
+		  while ((tS = trainSetSamples.read()) != null) {
+			  for (String tok : tS.getTokens()) {
+				  trainingTokens.add(tok);
+			  }
+		  }
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+	  return trainingTokens;
   }
 
 }

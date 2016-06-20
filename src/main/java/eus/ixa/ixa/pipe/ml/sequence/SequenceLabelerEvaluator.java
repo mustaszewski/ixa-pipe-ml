@@ -89,11 +89,14 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
 
     Span[] predictedNames = sequenceLabeler.tag(reference.getTokens());
     String [] referenceTokens = reference.getTokens();
+
     
     
     // If using the constructor SequenceLabelerEvaluator(SequenceLabeler nameFinder, SequenceLabelerEvaluationMonitor ... listeners), this will currently give an error because the field trainingVocabulary is not set
     // Check whether token currently being evaluated is in training set vocabulary
-    for (String tok : referenceTokens)
+    if (trainingVocabulary != null) {
+    	
+    	    for (String tok : referenceTokens)
     {
     	if (trainingVocabulary.contains(tok)) {
     		knownWordList.add(tok);
@@ -101,6 +104,8 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
     	else {
     	}
     }
+    }
+
     Span[] references = reference.getSequences();
     /*String[] predictedTags = StringUtils.getTagsFromSpan(predictedNames, reference.getTokens());
     String[] referenceTags = StringUtils.getTagsFromSpan(references, reference.getTokens());
@@ -127,19 +132,25 @@ public class SequenceLabelerEvaluator extends Evaluator<SequenceSample> {
       if (references[i].equals(predictedNames[i])) {
     	  wordAccuracy.add(1);
     	  // If current token is in training set vocabulary update KnownWordAccuracy
-    	  if (trainingVocabulary.contains(currentToken)) {
+    	  if (trainingVocabulary != null) {
+    	    if (trainingVocabulary.contains(currentToken)) {
     		  knownAccuracy.add(1);
-    	  } else {
+    	    } else {
     		  unknownAccuracy.add(1);
-    	  } 
+    	    }   
+    	  }
+
       }
       else {
     	  wordAccuracy.add(0);
-    	  if (trainingVocabulary.contains(currentToken)) {
+    	  if (trainingVocabulary != null) {
+    	    if (trainingVocabulary.contains(currentToken)) {
     		  knownAccuracy.add(0);
-    	  } else {
+    	    } else {
     		  unknownAccuracy.add(0);
+    	    }
     	  }
+
       }
     }
     fmeasure.updateScores(references, predictedNames);
